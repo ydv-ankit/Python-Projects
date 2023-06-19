@@ -1,3 +1,4 @@
+import os
 from sys import platform
 from os import system
 from getpass import getpass
@@ -44,26 +45,68 @@ def addData():
 
 def viewData():
     clrscr()
+    searchSite = input("SITE to lookup (blank for all): ")
     try:
         with open('userData.dat','rb') as file:
             try:
-                while(True):
-                    data = load(file)
-                    for i in range(4):
-                        print(temp[i]," --> ", decrypt(data[i]))
-                    print()
+                if(searchSite != ""):
+                    while(True):
+                        data = load(file)
+                        if(decrypt(data[0]) == searchSite):   
+                            for i in range(4):
+                                print(temp[i] + ' --> ' + decrypt(data[i]))
+                            print()
+                else:
+                    while(True):
+                        data = load(file)
+                        for i in range(4):
+                            print(temp[i] + ' --> ' + decrypt(data[i]))
+                        print()
             except EOFError:
-                input()
+                input("done...")
                 return
-    except Exception as e:
-        print("\t\tCannot read file...")
-        input("\t\t"+e)
+    except:
+        input("\t\tCannot read file...")
 
 def delData():
-    pass
+    clrscr()
+    viewData()
+    print("DATA TO DELETE ...")
+    site = input("SITE: ")
+    usr = input("USERNAME: ")
+    found = False
+    try:
+        file = open('userData.dat','rb')
+        while(True):
+            try:
+                data = load(file)
+                if(decrypt(data[0]) == site and decrypt(data[1])==usr):
+                    found = True
+                    continue
+                else:
+                    dupfile = open('new.dat', 'wb')
+                    dump(data, dupfile)
+                    dupfile.close()
+            except EOFError:
+                break
+        file.close()
+    except:
+        input("\t\tFile doesn't exist...")
+        return
+    # delete original file and rename duplicate with original file
+    try:
+        os.remove('userData.dat')
+        os.rename('new.dat','userData.dat')
+    except:
+        input("Error occured...")
+    if(found):
+        print("Record deleted succesfully...")
+    else:
+        input("No record matched...")
 
 def menu():
     clrscr()
+    print("\t\t>>> MENU <<<")
     print("\t\t1. Add Data")
     print("\t\t2. View Data")
     print("\t\t3. Delete Data")
@@ -71,7 +114,6 @@ def menu():
     op = input("\n\t\t> ")
     if(op == '1'):
         addData()
-        menu()
     elif(op == '2'):
         viewData()
     elif(op == '3'):
@@ -79,15 +121,15 @@ def menu():
     elif(op == '4'):
         return
     else:
-	    input("Invalid input!!")
-	    menu()
+	    input("\t\tInvalid input!!")
+    menu()
 
 def login():
     clrscr()
     print("\t>>> Welcome to Password Manager <<<\n\t\t\t\t\t- Cyfer")
     user = input("\n\n\t\tUsername : ")
     passwd = getpass("\n\t\tPassword : ")
-    if(user == '' and passwd == ''):
+    if(user == "" and passwd == ""):
         menu()
     else:
         print("\n\n\t\tInvalid Credentials !!")
